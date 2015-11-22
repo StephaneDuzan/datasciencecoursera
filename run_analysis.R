@@ -81,6 +81,7 @@ run_analysis <- function() {
    ## And i exclclude "...meanFreq()" ones
    columnSubset <- grep("subject|activity|-mean\\(|-std\\(",names(data))
    data <- data[,columnSubset]
+   featuresNames <- names(data)
    
    ##--------------------------------------------------------------------------
    ## 3. Uses descriptive activity names to name the activities in the data set
@@ -98,9 +99,6 @@ run_analysis <- function() {
    ##---------------------------------------------------------------------
    ## 4. Appropriately labels the data set with descriptive variable names
    ##---------------------------------------------------------------------
-   
-   ## 4.1 Replace existing chains by more literal ones
-   featuresNames <- names(data)
 
    featuresNames <- gsub("[()]","",featuresNames)
    featuresNames <- gsub("-X",".Axis.X",featuresNames)
@@ -135,11 +133,5 @@ run_analysis <- function() {
    filePath <- file.path(rootPath,fileName)
    
    write.table(newData,file=filePath,row.names=FALSE,eol="\r\n")
-   
-   ##newData
-   
-   result <- cbind(names(data),featuresNames)
-   
-   result
-   
+
    }
