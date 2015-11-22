@@ -1,4 +1,3 @@
-
 #Data Sources
 
 One of the most exciting areas in all of data science right now is wearable computing - see for example this article . Companies like Fitbit, Nike, and Jawbone Up are racing to develop the most advanced algorithms to attract new users. The data linked to from the course website represent data collected from the accelerometers from the Samsung Galaxy S smartphone. A full description is available at the site where the data was obtained: 
@@ -11,57 +10,50 @@ https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Datas
 
 #Data Transformation
 
+reshape2 library is required
 
-   0. Download dataset files and unzip
+The run_analysis.R script used to manipulate data sources is composed of the following steps:
 
-   0.1 Create dedicated "data"" repository into working director
-   0.2 Download zip file if not already done and unzip
+##Step 0: Download dataset files and unzip
 
-   1. Merges the training and the test sets to create one data set
+Step 0.1: Create dedicated "data"" repository into working directory
+Step 0.2: Download zip file (if not already done) and unzip
    
-   1.1 Define files ditinct paths (one for unzipped directory, one for train and test data sets)
-   
-   1.2 Get features names and convert into a vector of column names (featureNames)
+##Step 1: Merge the training and the test sets to create one data set
 
-   1.3 Get train files into 3 data tables (data_subject, data_x and data_y) then merge them with cbind function to obtain data_train
-   1.4 Get test files into 3 data tables (data_subject, data_x and data_y) then merge them with cbind function to obtain data_test
-   1.5 Combine test and train data tables, rename column names with featureNames
+Step 1.1: Define files ditinct paths (one for unzipped directory, one for each train and test data sets directories)
+Step 1.2: Get features names (from features.txt file) and convert into a vector of column names (featureNames)
+Step 1.3: Get train files (subject_train.txt, X_train.txt and y_train.txt) into 3 data tables (data_subject, data_x and data_y), then merge them with cbind function to obtain data_train table
+Step 1.4: Get test files (subject_test.txt, X_test.txt and y_test.txt) into 3 data tables (data_subject, data_x and data_y), then merge them with cbind function to obtain data_test table
+Step 1.5: Combine test and train data tables into one table (data), rename column names with featureNames
 
-   ##------------------------------------------------------------------------------------------
-   ## 2. Extracts only the measurements on the mean and standard deviation for each measurement
-   ## Tip: keep subject and activity columns
-   ##------------------------------------------------------------------------------------------
+## Step 2: Extracts only the measurements on the mean and standard deviation for each measurement
    
-   ## I ignore "angle(...,...Mean)" columns, considering result is an angle value not a mean
-   ## And i exclclude "...meanFreq()" ones
-   columnSubset <- grep("subject|activity|-mean\\(|-std\\(",names(data))
-   data <- data[,columnSubset]
-   
-   ##--------------------------------------------------------------------------
-   ## 3. Uses descriptive activity names to name the activities in the data set
-   ##--------------------------------------------------------------------------
-   
-   ## 3.1 Get activity labels and convert into a vector of activity labels
+- Reshape data table, using grep function applied on data table names,  ignoring "angle(...,...Mean)" columns (considering result is an angle value not a mean) and exclcluding "...meanFreq()" values
+- Then update featureNames from data table (reshaped) names
 
-      3.2 Convert activity values to activity labels
+## Step 3: Uses descriptive activity names to name the activities in the data set
 
-   4. Appropriately labels the data set with descriptive variable names
+Step 3.1: Get activity labels from activity_labels.txt and convert into a vector of activity labels (activityLabels)
+Step 3.2: Convert data table activity values into factor values using activityLabels
+
+## Step 4: Appropriately labels the data set with descriptive variable names
    
-      4.1 Replace existing chains by more literal ones
+- Replace existing names by more literal ones using gsub function applied on featureNames
+- Update data table names with featureNames
    
-   5. From the data set in step 4, creates a second, independent tidy data set 
-   with the average of each variable for each activity and each subject
+## Step 5: From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
       
-      5.1 Generate new data set using reshpae functions melt and cast
-      5.2 Create .txt file from new data set
+Step 5.1: Generate new data set using reshape functions melt and cast, in order to compute mean of all measurements for each activity and each subject
+Step 5.2: Create .txt file from new data set
 
 #Data Structure
 
 Field #1:
 
- [1] "subject" 
+ [1] "subject": integer from 1 to 30 representing observations subjects
 
-Fields #2-67:
+Fields #2-67: all fields values are normalized
                                                                 
  [2] "Signal.Body.Accelerometer.Mean.Axis.X"                                   
  [3] "Signal.Body.Accelerometer.Mean.Axis.Y"                                   
@@ -132,4 +124,4 @@ Fields #2-67:
 
 Field #68:
 
-[68] "activity"
+[68] "activity": factor with values  WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING,LAYING
