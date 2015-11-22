@@ -32,6 +32,8 @@ The dataset includes the following files:
 
 - 'test/y_test.txt': Test labels.
 
+- 'second_data_set.txt': tidy data set for "Getting and Cleaning Data - Course Project" (see README.md file)
+
 The following files are available for the train and test data. Their descriptions are equivalent. 
 
 - 'train/subject_train.txt': Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30. 
@@ -67,29 +69,105 @@ The run_analysis.R script used to manipulate data sources is composed of the fol
    testPath <- file.path(rootPath,"test")
 ```
 - Step 1.2: Get features names (from features.txt file) and convert into a vector of column names (featureNames)
-- Step 1.3: Get train files (subject_train.txt, X_train.txt and y_train.txt) into 3 data tables (data_subject, data_x and data_y), then merge them with cbind function to obtain data_train table
-- Step 1.4: Get test files (subject_test.txt, X_test.txt and y_test.txt) into 3 data tables (data_subject, data_x and data_y), then merge them with cbind function to obtain data_test table
-- Step 1.5: Combine test and train data tables into one table (data), rename column names with featureNames
+```
+   fileName <- "features.txt"
+   filePath <- file.path(rootPath,fileName)
+   data_features <- read.table(filePath)
+   featuresNames <- as.vector(data_features[,2])
+   featuresNames <- c("subject",featuresNames,"activity")
+```
+- Step 1.3: Get train files (subject_train.txt, X_train.txt and y_train.txt) into 3 data tables (data_subject, data_x and data_y)
+```
+   fileName <- "subject_train.txt"
+   filePath <- file.path(trainPath,fileName)
+   data_subject <- read.table(filePath)
+   
+   fileName <- "X_train.txt"
+   filePath <- file.path(trainPath,fileName)
+   data_x <- read.table(filePath)
+  
+   fileName <- "y_train.txt"
+   filePath <- file.path(trainPath,fileName)
+   data_y <- read.table(filePath)
+```
+   Then merge them with cbind function to obtain data_train table:
+```
+   data_train <- cbind(data_subject,data_x,data_y)
+```   
+- Step 1.4: Get test files (subject_test.txt, X_test.txt and y_test.txt) into 3 data tables (data_subject, data_x and data_y), then merge them with cbind function to obtain data_test table (idem step 1.3)
 
+- Step 1.5: Combine test and train data tables into one table (data), rename column names with featureNames (step 1.2)
+```  
+   data <- rbind(data_train,data_test)
+   names(data) <- featuresNames
+```  
 ## Step 2: Extracts only the measurements on the mean and standard deviation for each measurement
    
 - Reshape data table, using grep function applied on data table names,  ignoring "angle(...,...Mean)" columns (considering result is an angle value not a mean) and exclcluding "...meanFreq()" values
+``` 
+   columnSubset <- grep("subject|activity|-mean\\(|-std\\(",names(data))
+   data <- data[,columnSubset]
+``` 
 - Then update featureNames from data table (reshaped) names
+``` 
+   featuresNames <- names(data)
+``` 
 
 ## Step 3: Uses descriptive activity names to name the activities in the data set
 
 - Step 3.1: Get activity labels from activity_labels.txt and convert into a vector of activity labels (activityLabels)
+``` 
+   fileName <- "activity_labels.txt"
+   filePath <- file.path(rootPath,fileName)
+   data_activityLabels <- read.table(filePath)
+   activityLabels <- as.vector(data_activityLabels[,2])
+``` 
 - Step 3.2: Convert data table activity values into factor values using activityLabels
-
+``` 
+   data[,"activity"] <- factor(data[,"activity"],levels=1:6,labels=activityLabels)
+``` 
 ## Step 4: Appropriately labels the data set with descriptive variable names
    
 - Replace existing names by more literal ones using gsub function applied on featureNames
-- Update data table names with featureNames
+``` 
+   featuresNames <- gsub("[()]","",featuresNames)
+   featuresNames <- gsub("-X",".Axis.X",featuresNames)
+   featuresNames <- gsub("-Y",".Axis.Y",featuresNames)
+   featuresNames <- gsub("-Z",".Axis.Z",featuresNames)
+   featuresNames <- gsub("-mean",".Mean",featuresNames)
+   featuresNames <- gsub("-std",".StandardDeviation",featuresNames)
+   featuresNames <- gsub("meanFreq",".Mean.Frequency",featuresNames)
+   featuresNames <- gsub("Mag",".Magnitude",featuresNames)
+   featuresNames <- gsub("Jerk",".Jerk",featuresNames)
    
+   featuresNames <- gsub("Acc",".Accelerometer",featuresNames)
+   featuresNames <- gsub("Gyro",".Gyroscope",featuresNames)
+   featuresNames <- gsub("BodyBody","Body",featuresNames)
+   featuresNames <- gsub("Body",".Body",featuresNames)
+   featuresNames <- gsub("Gravity",".Gravity",featuresNames)
+   
+   featuresNames <- gsub("f\\.","TransformedSignal.",featuresNames)
+   featuresNames <- gsub("t\\.","Signal.",featuresNames)
+``` 
+- Update data table names with featureNames
+``` 
+   names(data) <- featuresNames
+```
+
 ## Step 5: From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
       
 - Step 5.1: Generate new data set using reshape functions melt and cast, in order to compute mean of all measurements for each activity and each subject
+```
+   meltData <- melt(data,id=c("subject","activity"))
+   newData <- cast(meltData,subject+activity~variable,mean)
+```
 - Step 5.2: Create .txt file from new data set
+```
+   fileName <- "second_data_set.txt"
+   filePath <- file.path(rootPath,fileName)
+   
+   write.table(newData,file=filePath,row.names=FALSE,eol="\r\n")
+```
 
 #Data Structure
 
